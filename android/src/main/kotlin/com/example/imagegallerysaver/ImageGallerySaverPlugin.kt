@@ -37,8 +37,9 @@ class ImageGallerySaverPlugin : FlutterPlugin, MethodCallHandler {
                 val image = call.argument<ByteArray>("imageBytes") ?: return
                 val quality = call.argument<Int>("quality") ?: return
                 val name = call.argument<String>("name")
+                val dirName = call.argument<String>("dirName")
 
-                result.success(saveImageToGallery(BitmapFactory.decodeByteArray(image, 0, image.size), quality, name))
+                result.success(saveImageToGallery(BitmapFactory.decodeByteArray(image, 0, image.size), quality, name, dirName))
             }
             call.method == "saveFileToGallery" -> {
                 val path = call.argument<String>("file") ?: return
@@ -51,11 +52,11 @@ class ImageGallerySaverPlugin : FlutterPlugin, MethodCallHandler {
     }
 
 
-    private fun generateFile(extension: String = "", name: String? = null): File {
-        val storePath = Environment.getExternalStorageDirectory().absolutePath + File.separator + Environment.DIRECTORY_PICTURES
+    private fun generateFile(extension: String = "", name: String? = null, dirName: String? = null): File {
+        val storePath = Environment.getExternalStorageDirectory().absolutePath + File.separator + Environment.DIRECTORY_PICTURES + File.separator + dirName ?: "";
         val appDir = File(storePath)
         if (!appDir.exists()) {
-            appDir.mkdir()
+            appDir.mkdirs()
         }
         var fileName = name ?: System.currentTimeMillis().toString()
         if (extension.isNotEmpty()) {
@@ -64,9 +65,9 @@ class ImageGallerySaverPlugin : FlutterPlugin, MethodCallHandler {
         return File(appDir, fileName)
     }
 
-    private fun saveImageToGallery(bmp: Bitmap, quality: Int, name: String?): HashMap<String, Any?> {
+    private fun saveImageToGallery(bmp: Bitmap, quality: Int, name: String?, dirName: String?): HashMap<String, Any?> {
         val context = applicationContext
-        val file = generateFile("jpg", name = name)
+        val file = generateFile("jpg", name = name, dirName = dirName)
         return try {
             val fos = FileOutputStream(file)
             println("ImageGallerySaverPlugin $quality")
